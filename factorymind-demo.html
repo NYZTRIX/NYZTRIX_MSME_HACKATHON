@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FactoryMind AI — Factory Brain Demo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F14;
+    --panel:#121922;
+    --panel-2:#0F151D;
+    --line:#1E2A36;
+    --amber:#FFB020;
+    --cyan:#2DD4EE;
+    --green:#3DDC84;
+    --red:#FF5468;
+    --text:#E6EDF3;
+    --muted:#7C8A99;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;}
+  .disp{font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:#243241;border-radius:4px;}
+
+  .app{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+  @media (max-width:820px){.app{grid-template-columns:1fr;} .sidebar{display:none;}}
+
+  /* SIDEBAR */
+  .sidebar{background:var(--panel-2);border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 22px;}
+  .brand-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--amber),var(--red));display:flex;align-items:center;justify-content:center;font-weight:700;color:#0B0F14;font-size:13px;}
+  .brand-name{font-size:15px;font-weight:700;}
+  .brand-tag{font-size:9.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:1px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--muted);font-size:13.5px;font-weight:500;cursor:pointer;transition:.15s;border:1px solid transparent;}
+  .nav-item:hover{background:#152029;color:var(--text);}
+  .nav-item.active{background:#152530;color:var(--amber);border-color:#2A3745;}
+  .nav-ico{width:16px;text-align:center;font-size:14px;}
+  .sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);}
+  .nav-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 12px 4px;font-weight:600;}
+
+  /* STARTUP SUITE */
+  .note-band{background:#1B1508;border:1px solid #3A2A0E;color:var(--amber);font-size:12px;border-radius:10px;padding:10px 14px;margin-bottom:18px;line-height:1.6;}
+  .persona-role{font-size:11px;color:var(--amber);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:2px;}
+  .persona-name{font-weight:700;font-size:15px;margin-bottom:8px;}
+  .persona-row{font-size:12px;color:var(--text);margin:4px 0;}
+  .persona-row b{color:var(--muted);font-weight:600;}
+  .slide-card{border-left:3px solid var(--cyan);}
+  .slide-num{font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:11px;}
+  .qa-q{font-weight:600;font-size:13px;margin-bottom:6px;}
+  .qa-a{font-size:12px;color:var(--muted);line-height:1.6;}
+  .qa-tag{display:inline-block;font-size:9.5px;padding:2px 8px;border-radius:20px;background:#152530;color:var(--cyan);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+  .tl-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #17202A;}
+  .tl-item:last-child{border-bottom:none;}
+  .tl-when{width:90px;flex-shrink:0;font-size:11px;color:var(--amber);font-weight:700;font-family:'JetBrains Mono',monospace;}
+  .score-row{display:flex;align-items:center;gap:12px;padding:8px 0;font-size:12.5px;}
+  .score-label{width:150px;flex-shrink:0;color:var(--text);}
+  .score-num{width:36px;flex-shrink:0;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--muted);}
+
+  /* MAIN */
+  .main{padding:22px 26px 60px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+  .page-title{font-size:22px;font-weight:700;}
+  .page-sub{color:var(--muted);font-size:13px;margin-top:2px;}
+  .live-pill{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);padding:7px 12px;border-radius:20px;font-size:12px;color:var(--muted);}
+  .dot-live{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  .grid{display:grid;gap:16px;}
+  .g4{grid-template-columns:repeat(4,1fr);}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g2{grid-template-columns:2fr 1fr;}
+  @media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:repeat(1,1fr);}.g2{grid-template-columns:1fr;}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;}
+  .card-title{font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;font-weight:600;}
+  .kpi-val{font-size:28px;font-weight:700;}
+  .kpi-delta{font-size:12px;margin-top:4px;}
+  .up{color:var(--green);} .down{color:var(--red);} .flat{color:var(--muted);}
+
+  .section{margin-bottom:26px;}
+  .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .section-head h3{font-size:15px;margin:0;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);text-transform:uppercase;font-size:10.5px;letter-spacing:.04em;}
+  td{padding:9px 10px;border-bottom:1px solid #17202A;}
+  .badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+  .badge-ok{background:#123324;color:var(--green);}
+  .badge-warn{background:#3A2A0E;color:var(--amber);}
+  .badge-crit{background:#3A1520;color:var(--red);}
+
+  .bar-track{height:6px;background:#1A232D;border-radius:4px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:4px;}
+
+  .feed-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #17202A;font-size:12.5px;}
+  .feed-item:last-child{border-bottom:none;}
+  .feed-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .feed-time{color:var(--muted);font-size:11px;}
+
+  /* DIGITAL TWIN */
+  .twin-wrap{position:relative;background:radial-gradient(circle at 30% 20%,#111a24,#0a0e13 70%);border-radius:12px;border:1px solid var(--line);padding:10px;overflow:hidden;}
+  .machine-dot{cursor:pointer;}
+  .machine-pulse{animation:twinpulse 2s infinite;}
+  @keyframes twinpulse{0%{r:9;opacity:.9;}70%{r:20;opacity:0;}100%{r:20;opacity:0;}}
+  .twin-label{font-family:'JetBrains Mono',monospace;font-size:9px;fill:#7C8A99;}
+
+  .tab-content{display:none;}
+  .tab-content.active{display:block;animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .chart-box{position:relative;height:220px;}
+  .module-card{display:flex;flex-direction:column;gap:10px;}
+  .module-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .module-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">FM</div>
+      <div>
+        <div class="brand-name disp">FactoryMind</div>
+        <div class="brand-tag">AI Factory Brain</div>
+      </div>
+    </div>
+    <div class="nav-item active" data-tab="ceo"><span class="nav-ico">◆</span> CEO Overview</div>
+    <div class="nav-item" data-tab="manager"><span class="nav-ico">▤</span> Manager Dashboard</div>
+    <div class="nav-item" data-tab="maintenance"><span class="nav-ico">⚙</span> Maintenance</div>
+    <div class="nav-item" data-tab="twin"><span class="nav-ico">⬡</span> Digital Twin</div>
+    <div class="nav-item" data-tab="ai"><span class="nav-ico">✦</span> AI Modules</div>
+    <div class="nav-item" data-tab="arch"><span class="nav-ico">▥</span> Architecture</div>
+    <div class="nav-item" data-tab="reports"><span class="nav-ico">▦</span> Reports</div>
+    <div class="nav-label">Startup Suite</div>
+    <div class="nav-item" data-tab="validate"><span class="nav-ico">◎</span> Business Validation</div>
+    <div class="nav-item" data-tab="grant"><span class="nav-ico">₹</span> Grant Proposal</div>
+    <div class="nav-item" data-tab="model"><span class="nav-ico">◫</span> Business Model</div>
+    <div class="nav-item" data-tab="pitch"><span class="nav-ico">▶</span> Pitch Deck</div>
+    <div class="nav-item" data-tab="judge"><span class="nav-ico">?</span> Judge Prep</div>
+    <div class="nav-item" data-tab="roadmap"><span class="nav-ico">→</span> Roadmap</div>
+    <div class="nav-item" data-tab="score"><span class="nav-ico">★</span> Self-Evaluation</div>
+    <div class="sidebar-foot mono">v0.1-demo · SAIS Labs<br>Simulated data · no live IoT</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <div class="topbar">
+      <div>
+        <div class="page-title disp" id="pageTitle">CEO Overview</div>
+        <div class="page-sub" id="pageSub">Real-time factory intelligence across all lines</div>
+      </div>
+      <div class="live-pill"><span class="dot-live"></span> <span id="clock" class="mono">--:--:--</span> · Line A, B, C connected</div>
+    </div>
+
+    <!-- ===================== CEO TAB ===================== -->
+    <div class="tab-content active" id="tab-ceo">
+      <div class="grid g4 section">
+        <div class="card"><div class="card-title">OEE (Overall Equipment Effectiveness)</div><div class="kpi-val" id="kpiOEE">--%</div><div class="kpi-delta up">▲ 3.2% vs last week</div></div>
+        <div class="card"><div class="card-title">Predicted Downtime Avoided</div><div class="kpi-val" id="kpiDowntime">-- hrs</div><div class="kpi-delta up">this month</div></div>
+        <div class="card"><div class="card-title">Defect Rate</div><div class="kpi-val" id="kpiDefect">--%</div><div class="kpi-delta down">▼ 0.8% vs last week</div></div>
+        <div class="card"><div class="card-title">Energy Cost Saved</div><div class="kpi-val" id="kpiEnergy">₹--</div><div class="kpi-delta up">this month</div></div>
+      </div>
+
+      <div class="grid g2 section">
+        <div class="card">
+          <div class="card-title">Production Output vs Target — 7 Days</div>
+          <div class="chart-box"><canvas id="chartProduction"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Factory Health Snapshot</div>
+          <div id="healthList"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h3>Live Alerts Across All Modules</h3><span class="page-sub">auto-updating</span></div>
+        <div class="card" id="ceoFeed"></div>
+      </div>
+    </div>
+
+    <!-- ===================== MANAGER TAB ===================== -->
+    <div class="tab-content" id="tab-manager">
+      <div class="grid g3 section">
+        <div class="card"><div class="card-title">Active Machines</div><div class="kpi-val" id="mgrActive">--/12</div></div>
+        <div class="card"><div class="card-title">Workers on Floor</div><div class="kpi-val" id="mgrWorkers">--</div></div>
+        <div class="card"><div class="card-title">PPE Violations Today</div><div class="kpi-val" id="mgrPPE">--</div></div>
+      </div>
+      <div class="section">
+        <div class="section-head"><h3>Production Line Status</h3></div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Line</th><th>Status</th><th>Target/hr</th><th>Actual/hr</th><th>Efficiency</th></tr></thead>
+            <tbody id="lineTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="grid g2 section">
+        <div class="card"><div class="card-title">Water Usage — Today (kL)</div><div class="chart-box"><canvas id="chartWater"></canvas></div></div>
+        <div class="card"><div class="card-title">Energy Load — Today (kW)</div><div class="chart-box"><canvas id="chartEnergy"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- ===================== MAINTENANCE TAB ===================== -->
+    <div class="tab-content" id="tab-maintenance">
+      <div class="section">
+        <div class="section-head"><h3>Predictive Maintenance — Machine Risk Scores</h3><span class="page-sub">Model: gradient-boosted RUL estimator (simulated)</span></div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Machine</th><th>Vibration</th><th>Temp (°C)</th><th>Current (A)</th><th>Failure Risk</th><th>Status</th></tr></thead>
+            <tbody id="machineTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><h3>Maintenance Alert Feed</h3></div>
+        <div class="card" id="maintFeed"></div>
+      </div>
+    </div>
+
+    <!-- ===================== DIGITAL TWIN TAB ===================== -->
+    <div class="tab-content" id="tab-twin">
+      <div class="section">
+        <div class="section-head"><h3>Live Factory Layout</h3><span class="page-sub">Click a machine node for details</span></div>
+        <div class="twin-wrap">
+          <svg id="twinSvg" viewBox="0 0 900 420" width="100%" style="display:block;"></svg>
+        </div>
+      </div>
+      <div class="grid g3">
+        <div class="card"><div class="card-title">Selected Machine</div><div id="twinDetail" class="mono" style="font-size:13px;color:var(--muted);">Click a node to inspect</div></div>
+        <div class="card"><div class="card-title">Legend</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:12.5px;margin-top:4px;">
+            <div><span style="color:var(--green);">●</span> Healthy — running normally</div>
+            <div><span style="color:var(--amber);">●</span> Watch — early risk signal</div>
+            <div><span style="color:var(--red);">●</span> Critical — action needed</div>
+          </div>
+        </div>
+        <div class="card"><div class="card-title">Twin Sync</div><div style="font-size:12.5px;color:var(--muted);">8 machines · updated every 2s · edge node: Line-A-Gateway-01</div></div>
+      </div>
+    </div>
+
+    <!-- ===================== AI MODULES TAB ===================== -->
+    <div class="tab-content" id="tab-ai">
+      <div class="grid g4" id="aiModuleGrid"></div>
+    </div>
+
+    <!-- ===================== ARCHITECTURE TAB ===================== -->
+    <div class="tab-content" id="tab-arch">
+      <div class="section">
+        <div class="section-head"><h3>High-Level Data Flow</h3><span class="page-sub">sensor → edge → backend → AI → dashboard</span></div>
+        <div class="twin-wrap" style="padding:14px;">
+          <svg id="archSvg" viewBox="0 0 1000 260" width="100%" style="display:block;"></svg>
+        </div>
+      </div>
+
+      <div class="grid g2 section">
+        <div class="card">
+          <div class="card-title">Tech Stack</div>
+          <div id="stackGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Security Layer</div>
+          <ul style="font-size:12.5px;color:var(--text);line-height:1.9;margin:4px 0 0;padding-left:18px;">
+            <li>JWT access (15 min) + refresh (7 day) tokens</li>
+            <li>RBAC — CEO / Manager / Maintenance / Admin</li>
+            <li>TLS everywhere, MQTT over TLS (8883)</li>
+            <li>Redis-backed rate limiting per API key</li>
+            <li>Pydantic validation on every ingestion endpoint</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h3>Folder Structure</h3></div>
+        <div class="card mono" style="font-size:12px;line-height:1.7;color:var(--text);white-space:pre;overflow-x:auto;">factorymind-ai/
+├── backend/app/{core,models,schemas,api/v1,services,ml,ws}
+├── frontend/src/{pages,components,hooks,api,store}
+├── iot-firmware/esp32/
+├── ml-training/{predictive_maintenance,defect_detection,ppe_detection}
+├── docker-compose.yml
+└── .github/workflows/ci-cd.yml</div>
+      </div>
+    </div>
+
+    <!-- ===================== REPORTS TAB ===================== -->
+    <div class="tab-content" id="tab-reports">
+      <div class="card section">
+        <div class="card-title">Auto-Generated Weekly Report (preview)</div>
+        <p style="font-size:13px;color:var(--text);line-height:1.7;">
+          Week of <span id="repWeek" class="mono"></span> — OEE averaged <b id="repOEE"></b>%, with
+          <b id="repDown"></b> hrs of downtime prevented by predictive maintenance flags on Machines
+          M-03 and M-07. Defect rate held at <b id="repDefect"></b>%, driven mainly by surface-scratch
+          detections on Line B. Water consumption was <b id="repWater"></b> kL below the same week last
+          month following the leak-alert on the cooling tower line. No PPE-related incidents were
+          escalated beyond a warning.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-title">Export</div>
+        <div style="font-size:12.5px;color:var(--muted);">In the full product this generates a PDF/Excel report and emails it to management automatically every Monday 8 AM.</div>
+      </div>
+    </div>
+
+    <!-- ===================== BUSINESS VALIDATION TAB ===================== -->
+    <div class="tab-content" id="tab-validate">
+      <div class="note-band">Template — swap in real interviews, survey responses and pilot results from your own factory visits before this goes into any submission.</div>
+
+      <div class="section">
+        <div class="section-head"><h3>Customer Personas</h3></div>
+        <div class="grid g4" id="personaGrid"></div>
+      </div>
+
+      <div class="grid g2 section">
+        <div class="card">
+          <div class="card-title">30-Day Pilot Plan</div>
+          <div id="pilotTimeline"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Sample Factory Survey Questions</div>
+          <div id="surveyList" style="font-size:12.5px;line-height:1.9;color:var(--text);"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h3>Core Team & Advisors</h3><span class="page-sub">fill with your real names/roles — judges probe execution risk if this is thin</span></div>
+        <div class="grid g3" id="teamGrid"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h3>Letter of Intent — Template</h3><span class="page-sub">get one real factory owner to sign this before you submit</span></div>
+        <div class="card mono" style="font-size:12px;line-height:1.9;color:var(--text);white-space:pre-wrap;">To: MSME Idea Hackathon 6.0 — Evaluation Committee
+Subject: Letter of Intent — Pilot Participation for FactoryMind AI
+
+We, [Factory Name], [City, State], a [Udyam Registration No.] registered MSME
+engaged in [nature of manufacturing], confirm our intent to participate as a
+pilot site for FactoryMind AI's factory monitoring system for a period of
+30 days at no cost to us.
+
+We understand this pilot involves installing sensors/cameras on [X] machines
+and reviewing AI-generated alerts against our own maintenance and safety logs.
+
+Authorized Signatory: ______________________
+Designation: ______________________
+Date: ______________________
+Company Seal: ______________________</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:8px;">
+          One signed LOI from a real factory owner is worth more to your application than any number of projected slides — prioritize getting this before the deadline.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== GRANT PROPOSAL TAB ===================== -->
+    <div class="tab-content" id="tab-grant">
+      <div class="note-band">Template budget for a ₹15,00,000 MSME grant ask — every line item needs your real vendor quotes and justification before submission.</div>
+      <div class="grid g4 section">
+        <div class="card"><div class="card-title">Total Ask</div><div class="kpi-val">₹15.0L</div></div>
+        <div class="card"><div class="card-title">Hardware + Cloud</div><div class="kpi-val">₹5.8L</div></div>
+        <div class="card"><div class="card-title">AI + Software Dev</div><div class="kpi-val">₹5.5L</div></div>
+        <div class="card"><div class="card-title">Pilot, Legal & Buffer</div><div class="kpi-val">₹3.7L</div></div>
+      </div>
+      <div class="section">
+        <div class="card">
+          <table>
+            <thead><tr><th>Category</th><th>Line Items</th><th>Amount (₹)</th><th>Justification</th></tr></thead>
+            <tbody id="budgetTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== BUSINESS MODEL TAB ===================== -->
+    <div class="tab-content" id="tab-model">
+      <div class="note-band">Pricing and forecasts below are illustrative starting points — validate against real customer conversations before quoting them anywhere.</div>
+      <div class="grid g3 section" id="pricingGrid"></div>
+      <div class="grid g2 section">
+        <div class="card">
+          <div class="card-title">5-Year Revenue Forecast (Projected)</div>
+          <div class="chart-box"><canvas id="chartForecast"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Go-to-Market Channels</div>
+          <div style="font-size:12.5px;line-height:2;color:var(--text);">
+            Industrial expos & MSME trade fairs · Direct outreach via MSME/DIC networks ·
+            LinkedIn founder-led content · Startup India & state incubator partnerships ·
+            Referral pilots with 2–3 anchor factories · Systems-integrator partnerships
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h3>Unit Economics — CAC vs LTV Calculator</h3><span class="page-sub">plug in your real numbers once you have pilot/sales data</span></div>
+        <div class="card">
+          <div class="grid g4" style="margin-bottom:14px;">
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Avg. monthly revenue/customer (₹)</div>
+              <input type="number" id="ueArpu" value="22000" class="mono" style="width:100%;background:#0F151D;border:1px solid var(--line);color:var(--text);padding:8px;border-radius:6px;">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Gross margin (%)</div>
+              <input type="number" id="ueMargin" value="65" class="mono" style="width:100%;background:#0F151D;border:1px solid var(--line);color:var(--text);padding:8px;border-radius:6px;">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Avg. customer lifetime (months)</div>
+              <input type="number" id="ueLife" value="30" class="mono" style="width:100%;background:#0F151D;border:1px solid var(--line);color:var(--text);padding:8px;border-radius:6px;">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">CAC — cost to acquire 1 customer (₹)</div>
+              <input type="number" id="ueCac" value="35000" class="mono" style="width:100%;background:#0F151D;border:1px solid var(--line);color:var(--text);padding:8px;border-radius:6px;">
+            </div>
+          </div>
+          <div class="grid g3">
+            <div class="card" style="background:#0F151D;"><div class="card-title">LTV (lifetime gross profit)</div><div class="kpi-val mono" id="ueLtvOut" style="font-size:22px;">--</div></div>
+            <div class="card" style="background:#0F151D;"><div class="card-title">LTV : CAC Ratio</div><div class="kpi-val mono" id="ueRatioOut" style="font-size:22px;">--</div></div>
+            <div class="card" style="background:#0F151D;"><div class="card-title">CAC Payback (months)</div><div class="kpi-val mono" id="uePaybackOut" style="font-size:22px;">--</div></div>
+          </div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.6;">
+            Investors and judges look for LTV:CAC ≥ 3 and payback under 12–18 months. The default numbers above are placeholders —
+            replace ARPU, margin and CAC with figures from your actual pilot/sales conversations before you quote this anywhere.
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h3>Competitive Landscape</h3><span class="page-sub">where FactoryMind sits vs existing options</span></div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Option MSMEs use today</th><th>Typical Cost</th><th>Install Complexity</th><th>AI Depth</th><th>MSME Fit</th></tr></thead>
+            <tbody>
+              <tr><td>Manual logs / foreman judgment</td><td>₹0 direct, high hidden cost</td><td>None</td><td><span class="badge badge-crit">None</span></td><td><span class="badge badge-ok">Default today</span></td></tr>
+              <tr><td>Large industrial IoT platforms (e.g. Siemens/GE-class suites)</td><td>Enterprise pricing, multi-lakh setup</td><td><span class="badge badge-crit">High</span></td><td><span class="badge badge-ok">High</span></td><td><span class="badge badge-crit">Priced out of MSME</span></td></tr>
+              <tr><td>Basic SCADA / dashboard-only tools</td><td>Low–Medium</td><td><span class="badge badge-warn">Medium</span></td><td><span class="badge badge-crit">Low — reporting only, no prediction</span></td><td><span class="badge badge-warn">Partial</span></td></tr>
+              <tr><td><b>FactoryMind AI</b></td><td>₹8K–22K/mo, retrofit hardware</td><td><span class="badge badge-ok">Low — plug-in edge kit</span></td><td><span class="badge badge-ok">High — 8 purpose-built models</span></td><td><span class="badge badge-ok">Built for MSME budgets</span></td></tr>
+            </tbody>
+          </table>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.6;">
+            The gap FactoryMind targets: enterprise IoT suites are AI-capable but priced and architected for large plants;
+            SCADA/dashboard tools are MSME-affordable but don't predict failures. Verify current competitor pricing and
+            features yourself before quoting this table to judges — treat it as a starting map, not a cited fact.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== PITCH DECK TAB ===================== -->
+    <div class="tab-content" id="tab-pitch">
+      <div class="section-head"><h3>15-Slide Investor Deck Outline</h3><span class="page-sub">outline only — build the visuals in your slide tool</span></div>
+      <div class="grid g3" id="pitchGrid"></div>
+    </div>
+
+    <!-- ===================== JUDGE PREP TAB ===================== -->
+    <div class="tab-content" id="tab-judge">
+      <div class="note-band">Starter question bank — expand this with questions specific to your actual data, patents and numbers before a real panel.</div>
+      <div class="grid g3" id="judgeGrid"></div>
+    </div>
+
+    <!-- ===================== ROADMAP TAB ===================== -->
+    <div class="tab-content" id="tab-roadmap">
+      <div class="grid g2 section">
+        <div class="card">
+          <div class="card-title">6-Month Roadmap</div>
+          <div id="roadmap6"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">1–3 Year Roadmap</div>
+          <div id="roadmap3y"></div>
+        </div>
+      </div>
+      <div class="grid g3">
+        <div class="card"><div class="card-title">Funding Stages</div><div style="font-size:12.5px;line-height:2;">Pre-seed (grant + friends & family)<br>Seed (₹75L–2Cr, angel/incubator)<br>Series A (₹8–15Cr, VC)</div></div>
+        <div class="card"><div class="card-title">Incubation Targets</div><div style="font-size:12.5px;line-height:2;">Startup India Seed Fund<br>IIT/NIT TBI programs<br>State MSME innovation schemes</div></div>
+        <div class="card"><div class="card-title">Hiring Plan</div><div style="font-size:12.5px;line-height:2;">AI/ML engineer<br>Backend + IoT engineer<br>Field sales (MSME focus)</div></div>
+      </div>
+    </div>
+
+    <!-- ===================== SELF-EVALUATION TAB ===================== -->
+    <div class="tab-content" id="tab-score">
+      <div class="note-band">A self-scoring worksheet to find gaps before you pitch — not a substitute for real judge feedback.</div>
+      <div class="grid g2 section">
+        <div class="card">
+          <div class="card-title">Score Worksheet (out of 10 each)</div>
+          <div id="scoreList"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Total</div>
+          <div class="kpi-val" id="scoreTotal">--/100</div>
+          <div class="page-sub" style="margin-top:6px;">Fill in your own scores per category — this is a template, not a verdict.</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><h3>Where to Focus First</h3></div>
+        <div class="grid g3" id="improveGrid"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ---------------- NAVIGATION ---------------- */
+const titles = {
+  ceo:['CEO Overview','Real-time factory intelligence across all lines'],
+  manager:['Manager Dashboard','Shift-level production, safety and resource view'],
+  maintenance:['Maintenance Console','Predictive failure risk across all machines'],
+  twin:['Digital Twin','Live 3D-style factory floor visualization'],
+  ai:['AI Modules','Eight specialized models running on the Factory Brain'],
+  arch:['System Architecture','How data flows from sensor to dashboard'],
+  reports:['Reports','Auto-generated summaries for management'],
+  validate:['Business Validation','Personas, pilot plan and survey — template to fill with real data'],
+  grant:['Grant Proposal','₹15L MSME budget template'],
+  model:['Business Model','Pricing, revenue streams and 5-year forecast'],
+  pitch:['Pitch Deck','15-slide investor deck outline'],
+  judge:['Judge Prep','Starter Q&A bank for panel prep'],
+  roadmap:['Roadmap','6-month, 1-year and 3-year plan'],
+  score:['Self-Evaluation','Scoring worksheet and priority gaps']
+};
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    const tab = item.dataset.tab;
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    document.getElementById('tab-'+tab).classList.add('active');
+    document.getElementById('pageTitle').textContent = titles[tab][0];
+    document.getElementById('pageSub').textContent = titles[tab][1];
+  });
+});
+
+/* ---------------- CLOCK ---------------- */
+setInterval(()=>{document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-IN',{hour12:false});},1000);
+
+/* ---------------- HELPERS ---------------- */
+function rnd(a,b){return Math.random()*(b-a)+a;}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function fmt1(n){return n.toFixed(1);}
+
+/* ---------------- MACHINES STATE ---------------- */
+const machineNames = ['CNC-01','Lathe-02','Press-03','Weld-04','Boiler-05','Compressor-06','Conveyor-07','Chiller-08'];
+let machines = machineNames.map((name,i)=>({
+  name, vib: rnd(1,3), temp: rnd(45,65), current: rnd(8,15),
+  risk: rnd(5,25), x: 90+ (i%4)*200, y: i<4?110:280
+}));
+
+function riskStatus(r){
+  if(r<35) return {label:'Healthy',cls:'badge-ok',color:'#3DDC84'};
+  if(r<65) return {label:'Watch',cls:'badge-warn',color:'#FFB020'};
+  return {label:'Critical',cls:'badge-crit',color:'#FF5468'};
+}
+
+function stepMachines(){
+  machines.forEach(m=>{
+    m.vib = Math.max(0.5, m.vib + rnd(-0.15,0.18));
+    m.temp = Math.max(30, m.temp + rnd(-0.8,1.0));
+    m.current = Math.max(4, m.current + rnd(-0.4,0.4));
+    m.risk = Math.min(97, Math.max(3, m.risk + rnd(-3,4)));
+  });
+}
+
+function renderMachineTable(){
+  const tbody = document.getElementById('machineTable');
+  tbody.innerHTML = machines.map(m=>{
+    const s = riskStatus(m.risk);
+    return `<tr>
+      <td>${m.name}</td>
+      <td class="mono">${fmt1(m.vib)} mm/s</td>
+      <td class="mono">${fmt1(m.temp)}°C</td>
+      <td class="mono">${fmt1(m.current)} A</td>
+      <td><div class="bar-track" style="width:110px;"><div class="bar-fill" style="width:${m.risk}%;background:${s.color};"></div></div></td>
+      <td><span class="badge ${s.cls}">${s.label}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ---------------- FEEDS ---------------- */
+const feedTemplates = [
+  {ico:'⚠',bg:'#3A2A0E',color:'#FFB020',text:m=>`Vibration rising on ${m} — schedule inspection within 48h`},
+  {ico:'✓',bg:'#123324',color:'#3DDC84',text:m=>`${m} completed shift within normal thermal range`},
+  {ico:'🛡',bg:'#3A1520',color:'#FF5468',text:()=>`PPE violation detected — worker without helmet, Zone C camera`},
+  {ico:'🔍',bg:'#3A2A0E',color:'#FFB020',text:()=>`Surface scratch defect flagged on Line B, batch #${Math.floor(rnd(1000,9999))}`},
+  {ico:'💧',bg:'#0E2A3A',color:'#2DD4EE',text:()=>`Water flow anomaly on cooling line — possible leak, 4.2 kL/hr above baseline`},
+  {ico:'⚡',bg:'#0E2A3A',color:'#2DD4EE',text:()=>`Peak energy load detected — compressor bank running 18% above threshold`},
+];
+
+function addFeedItem(containerId, item){
+  const el = document.getElementById(containerId);
+  const div = document.createElement('div');
+  div.className='feed-item';
+  const now = new Date().toLocaleTimeString('en-IN',{hour12:false});
+  div.innerHTML = `<div class="feed-ico" style="background:${item.bg};color:${item.color};">${item.ico}</div>
+    <div><div>${item.text}</div><div class="feed-time mono">${now}</div></div>`;
+  el.prepend(div);
+  while(el.children.length>8) el.removeChild(el.lastChild);
+}
+
+function pushRandomFeed(){
+  const t = pick(feedTemplates);
+  const m = pick(machineNames);
+  const text = t.text(m);
+  addFeedItem('ceoFeed',{...t,text});
+  if(t.ico==='⚠'||t.ico==='✓') addFeedItem('maintFeed',{...t,text});
+}
+
+/* ---------------- KPIs ---------------- */
+function updateKPIs(){
+  document.getElementById('kpiOEE').textContent = fmt1(rnd(78,88))+'%';
+  document.getElementById('kpiDowntime').textContent = fmt1(rnd(20,40))+' hrs';
+  document.getElementById('kpiDefect').textContent = fmt1(rnd(1.2,2.6))+'%';
+  document.getElementById('kpiEnergy').textContent = '₹'+Math.floor(rnd(38000,62000)).toLocaleString('en-IN');
+  document.getElementById('mgrActive').textContent = Math.floor(rnd(9,12))+'/12';
+  document.getElementById('mgrWorkers').textContent = Math.floor(rnd(40,68));
+  document.getElementById('mgrPPE').textContent = Math.floor(rnd(0,4));
+}
+
+/* ---------------- HEALTH LIST (CEO) ---------------- */
+function renderHealthList(){
+  const el = document.getElementById('healthList');
+  el.innerHTML = machines.slice(0,6).map(m=>{
+    const s = riskStatus(m.risk);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #17202A;font-size:12.5px;">
+      <span>${m.name}</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="bar-track" style="width:80px;"><div class="bar-fill" style="width:${m.risk}%;background:${s.color};"></div></div>
+        <span style="color:${s.color};font-size:11px;font-weight:600;">${s.label}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- LINE TABLE (Manager) ---------------- */
+const lines = ['Line A — Assembly','Line B — Machining','Line C — Packaging'];
+function renderLineTable(){
+  const tbody = document.getElementById('lineTable');
+  tbody.innerHTML = lines.map(l=>{
+    const target = Math.floor(rnd(80,140));
+    const actual = Math.floor(target*rnd(0.82,1.02));
+    const eff = ((actual/target)*100).toFixed(0);
+    const status = eff>90?['Running','badge-ok']:eff>75?['Slowed','badge-warn']:['Stopped','badge-crit'];
+    return `<tr><td>${l}</td><td><span class="badge ${status[1]}">${status[0]}</span></td>
+      <td class="mono">${target}</td><td class="mono">${actual}</td><td class="mono">${eff}%</td></tr>`;
+  }).join('');
+}
+
+/* ---------------- AI MODULES GRID ---------------- */
+const aiModules = [
+  {name:'Predictive Maintenance', ico:'⚙', color:'#FFB020', desc:'Forecasts machine failure 24–72h ahead using vibration, thermal & current signals.', metric:'2 machines flagged', model:'Gradient Boosted RUL'},
+  {name:'Defect Detection', ico:'🔍', color:'#2DD4EE', desc:'Computer vision inspection for surface, dimensional & assembly defects.', metric:'99.1% accuracy', model:'YOLOv8 fine-tuned'},
+  {name:'PPE / Safety Detection', ico:'🛡', color:'#FF5468', desc:'Detects helmet, gloves, vest compliance and restricted-zone entry.', metric:'0 open violations', model:'YOLOv8-pose'},
+  {name:'Water Intelligence', ico:'💧', color:'#2DD4EE', desc:'Tracks flow, detects leaks, and forecasts daily consumption per line.', metric:'6% below baseline', model:'LSTM forecaster'},
+  {name:'Energy Intelligence', ico:'⚡', color:'#FFB020', desc:'Load forecasting and peak-shaving recommendations across shifts.', metric:'₹48K saved MTD', model:'Prophet + rules'},
+  {name:'Production Prediction', ico:'📈', color:'#3DDC84', desc:'Predicts shift output and bottleneck risk from historical + live data.', metric:'92% forecast accuracy', model:'XGBoost'},
+  {name:'Inventory Prediction', ico:'📦', color:'#3DDC84', desc:'Forecasts raw material depletion and reorder points per SKU.', metric:'3 SKUs reorder soon', model:'Time-series ARIMA'},
+  {name:'Factory Copilot', ico:'✦', color:'#2DD4EE', desc:'Conversational assistant — ask in Tanglish/English about any floor event.', metric:'Ready', model:'LLM + RAG over sensor logs'},
+];
+function renderAiModules(){
+  document.getElementById('aiModuleGrid').innerHTML = aiModules.map(m=>`
+    <div class="card module-card">
+      <div class="module-top">
+        <div class="module-ico" style="background:${m.color}22;color:${m.color};">${m.ico}</div>
+        <span class="badge badge-ok">Active</span>
+      </div>
+      <div style="font-weight:600;font-size:14px;">${m.name}</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5;">${m.desc}</div>
+      <div style="font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;margin-top:auto;">
+        Model: ${m.model}<br><span style="color:${m.color};font-weight:600;">${m.metric}</span>
+      </div>
+    </div>`).join('');
+}
+
+/* ---------------- DIGITAL TWIN SVG ---------------- */
+function renderTwin(){
+  const svg = document.getElementById('twinSvg');
+  let conveyors = '';
+  for(let i=0;i<3;i++){
+    conveyors += `<line x1="60" y1="${110+i*90}" x2="820" y2="${110+i*90}" stroke="#1E2A36" stroke-width="2" stroke-dasharray="6 6"/>`;
+  }
+  let nodes = machines.map((m,i)=>{
+    const s = riskStatus(m.risk);
+    return `<g class="machine-dot" data-idx="${i}">
+      <circle cx="${m.x}" cy="${m.y}" r="20" class="machine-pulse" fill="${s.color}" opacity="0.25"/>
+      <circle cx="${m.x}" cy="${m.y}" r="10" fill="${s.color}"/>
+      <text x="${m.x}" y="${m.y+34}" text-anchor="middle" class="twin-label">${m.name}</text>
+    </g>`;
+  }).join('');
+  svg.innerHTML = `<rect width="900" height="420" fill="transparent"/>${conveyors}${nodes}`;
+  svg.querySelectorAll('.machine-dot').forEach(g=>{
+    g.addEventListener('click',()=>{
+      const m = machines[g.dataset.idx];
+      const s = riskStatus(m.risk);
+      document.getElementById('twinDetail').innerHTML =
+        `${m.name}<br>Status: <span style="color:${s.color};">${s.label}</span><br>
+         Vibration: ${fmt1(m.vib)} mm/s<br>Temp: ${fmt1(m.temp)}°C<br>Current: ${fmt1(m.current)} A<br>Failure risk: ${fmt1(m.risk)}%`;
+    });
+  });
+}
+
+/* ---------------- ARCHITECTURE DIAGRAM ---------------- */
+const archNodes = [
+  {label:'IoT Sensors\n+ Cameras', x:70,  y:130, color:'#2DD4EE'},
+  {label:'ESP32 Edge\nGateway',    x:260, y:130, color:'#2DD4EE'},
+  {label:'FastAPI\nBackend',       x:450, y:130, color:'#FFB020'},
+  {label:'Postgres +\nRedis',      x:640, y:60,  color:'#FFB020'},
+  {label:'AI Inference\n(8 Modules)', x:640, y:200, color:'#FF5468'},
+  {label:'React\nDashboards',      x:850, y:130, color:'#3DDC84'},
+];
+const archLinks = [[0,1],[1,2],[2,3],[2,4],[3,5],[4,5]];
+function renderArch(){
+  const svg = document.getElementById('archSvg');
+  if(!svg) return;
+  let lines = archLinks.map(([a,b])=>{
+    const A=archNodes[a], B=archNodes[b];
+    return `<line x1="${A.x+55}" y1="${A.y}" x2="${B.x-55}" y2="${B.y}" stroke="#2A3745" stroke-width="2" marker-end="url(#arrow)"/>`;
+  }).join('');
+  let nodes = archNodes.map(n=>{
+    const lines2 = n.label.split('\n');
+    return `<g>
+      <rect x="${n.x-55}" y="${n.y-28}" width="110" height="56" rx="10" fill="#121922" stroke="${n.color}" stroke-width="1.5"/>
+      <text x="${n.x}" y="${n.y-2}" text-anchor="middle" fill="#E6EDF3" font-size="11" font-family="Inter">${lines2[0]}</text>
+      <text x="${n.x}" y="${n.y+14}" text-anchor="middle" fill="#7C8A99" font-size="10" font-family="Inter">${lines2[1]||''}</text>
+    </g>`;
+  }).join('');
+  svg.innerHTML = `<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2A3745"/></marker></defs>${lines}${nodes}`;
+}
+
+const stackItems = [
+  ['React','#2DD4EE'],['Tailwind','#2DD4EE'],['FastAPI','#FFB020'],['PostgreSQL','#FFB020'],
+  ['TimescaleDB','#FFB020'],['Redis','#FF5468'],['Celery','#FF5468'],['PyTorch/YOLOv8','#3DDC84'],
+  ['XGBoost','#3DDC84'],['Prophet/LSTM','#3DDC84'],['ESP32','#2DD4EE'],['MQTT','#2DD4EE'],
+  ['Docker','#7C8A99'],['GitHub Actions','#7C8A99'],['Azure/AWS','#7C8A99']
+];
+function renderStack(){
+  const el = document.getElementById('stackGrid');
+  if(!el) return;
+  el.innerHTML = stackItems.map(([n,c])=>`<span class="badge" style="background:${c}22;color:${c};">${n}</span>`).join('');
+}
+
+/* ---------------- CHARTS ---------------- */
+Chart.defaults.color = '#7C8A99';
+Chart.defaults.borderColor = '#1E2A36';
+const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+const chartProduction = new Chart(document.getElementById('chartProduction'), {
+  type:'line',
+  data:{labels:days, datasets:[
+    {label:'Target', data:days.map(()=>rnd(900,1000).toFixed(0)), borderColor:'#7C8A99', borderDash:[4,4], tension:.3, pointRadius:0},
+    {label:'Actual', data:days.map(()=>rnd(780,980).toFixed(0)), borderColor:'#2DD4EE', backgroundColor:'#2DD4EE22', fill:true, tension:.3, pointRadius:2}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10,font:{size:11}}}},scales:{y:{grid:{color:'#17202A'}},x:{grid:{display:false}}}}
+});
+
+const chartWater = new Chart(document.getElementById('chartWater'), {
+  type:'bar',
+  data:{labels:['6am','9am','12pm','3pm','6pm','9pm'], datasets:[{label:'kL', data:[12,18,25,22,19,14].map(v=>v+rnd(-2,2)), backgroundColor:'#2DD4EE99'}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#17202A'}},x:{grid:{display:false}}}}
+});
+
+const chartEnergy = new Chart(document.getElementById('chartEnergy'), {
+  type:'bar',
+  data:{labels:['6am','9am','12pm','3pm','6pm','9pm'], datasets:[{label:'kW', data:[40,65,88,92,80,52].map(v=>v+rnd(-4,4)), backgroundColor:'#FFB02099'}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#17202A'}},x:{grid:{display:false}}}}
+});
+
+/* ---------------- STARTUP SUITE: PERSONAS ---------------- */
+const personas = [
+  {role:'Decision Maker', name:'Factory Owner (48–60)', rows:[['Pain','Unplanned downtime eats margin'],['Motivation','Protect profit, avoid surprises'],['Power','Final budget sign-off'],['Tech adoption','Low–Medium, needs simple ROI proof']]},
+  {role:'Buyer Influencer', name:'Production Manager (32–45)', rows:[['Pain','Misses targets from surprise breakdowns'],['Motivation','Hit output targets reliably'],['Power','Recommends, rarely approves budget'],['Tech adoption','Medium, comfortable with dashboards']]},
+  {role:'Buyer Influencer', name:'Safety Officer (28–40)', rows:[['Pain','Manual PPE checks are inconsistent'],['Motivation','Reduce incidents, pass audits'],['Power','Can block rollout on safety grounds'],['Tech adoption','Medium']]},
+  {role:'End User', name:'Maintenance Engineer (25–40)', rows:[['Pain','Reactive repairs, no early warning'],['Motivation','Fewer emergency call-outs'],['Power','Daily user, shapes adoption success'],['Tech adoption','Medium–High if UI is simple']]},
+];
+function renderPersonas(){
+  document.getElementById('personaGrid').innerHTML = personas.map(p=>`
+    <div class="card">
+      <div class="persona-role">${p.role}</div>
+      <div class="persona-name">${p.name}</div>
+      ${p.rows.map(r=>`<div class="persona-row"><b>${r[0]}:</b> ${r[1]}</div>`).join('')}
+    </div>`).join('');
+}
+
+const teamRoles = [
+  {role:'Founder / Product', name:'[Your Name]', bg:'#FFB020', notes:'Product vision, MSME relationships, fundraising & grant reporting'},
+  {role:'Technical Co-founder', name:'[Name — or "Hiring"]', bg:'#2DD4EE', notes:'Owns backend, ML pipeline and IoT firmware end-to-end'},
+  {role:'Industry Advisor', name:'[Name — or "In discussion"]', bg:'#3DDC84', notes:'Ex-factory manager / MSME-DIC contact who can open pilot doors'},
+];
+function renderTeam(){
+  const el = document.getElementById('teamGrid');
+  if(!el) return;
+  el.innerHTML = teamRoles.map(t=>`
+    <div class="card">
+      <div class="persona-role" style="color:${t.bg};">${t.role}</div>
+      <div class="persona-name">${t.name}</div>
+      <div class="persona-row" style="color:var(--muted);">${t.notes}</div>
+    </div>`).join('');
+}
+
+const pilotWeeks = [
+  ['Week 1','Install sensors/cameras on 2–3 priority machines, wire to edge gateway'],
+  ['Week 2','Collect baseline data, calibrate thresholds against the managers own logs'],
+  ['Week 3','Turn on AI alerts, shadow-run against manual checks for accuracy'],
+  ['Week 4','Compare downtime/defect numbers before vs after, present ROI to owner'],
+];
+function renderPilot(){
+  document.getElementById('pilotTimeline').innerHTML = pilotWeeks.map(w=>`
+    <div class="tl-item"><div class="tl-when">${w[0]}</div><div style="font-size:12.5px;">${w[1]}</div></div>`).join('');
+}
+
+const surveyQs = [
+  'How many unplanned stoppages did you have last month, and what caused them?',
+  'What is your rough cost per hour of downtime on your busiest line?',
+  'How are maintenance issues currently detected — scheduled checks or breakdowns?',
+  'What safety incidents or near-misses happened in the last quarter?',
+  'Roughly what share of your monthly electricity bill is production vs overhead?',
+  'Who signs off on a purchase in the ₹5–15L range, and what proof do they need?',
+  'Have you evaluated any IoT/AI monitoring tools before? What stopped adoption?',
+  'What would make you trust an AI alert enough to act on it immediately?',
+].map((q,i)=>`<div>${i+1}. ${q}</div>`).join('');
+function renderSurvey(){ document.getElementById('surveyList').innerHTML = surveyQs; }
+
+/* ---------------- GRANT BUDGET ---------------- */
+const budgetRows = [
+  ['Hardware', 'Sensors, cameras, ESP32 edge gateways', '3,80,000', 'Instrumenting 8 machines + 2 safety cameras across the pilot line'],
+  ['Cloud Infra', 'Server, DB, storage, monitoring (12 mo)', '1,20,000', 'Managed Postgres + object storage + uptime monitoring'],
+  ['Cloud/Setup', 'API hosting & networking setup', '80,000', 'Load balancer, TLS, staging + prod environments'],
+  ['AI Development', 'Model training, CV pipeline, LLM integration', '2,60,000', 'Compute for training + fine-tuning + evaluation cycles'],
+  ['Software Dev', 'Frontend, backend, dashboard, mobile', '2,90,000', 'Two-developer effort across the full stack'],
+  ['Testing', 'Factory, model & security testing', '80,000', 'On-site validation + penetration testing pass'],
+  ['Deployment', 'Installation, training, first-year maintenance', '90,000', 'On-site install crew + user training sessions'],
+  ['Travel', 'Factory visits & pilot deployment', '60,000', 'Site visits across 3–4 pilot factories'],
+  ['Legal', 'Patent filing, trademark, documentation', '70,000', 'Provisional patent + trademark registration'],
+  ['Pilot Expenses', 'Consumables, SIM/data, incidentals', '40,000', 'Running costs during the 30-day pilot'],
+  ['Contingency', 'Buffer (~7%)', '1,30,000', 'Standard reserve for cost overruns'],
+];
+function renderBudget(){
+  document.getElementById('budgetTable').innerHTML = budgetRows.map(r=>`
+    <tr><td>${r[0]}</td><td>${r[1]}</td><td class="mono">₹${r[2]}</td><td style="color:var(--muted);font-size:11.5px;">${r[3]}</td></tr>`).join('');
+}
+
+/* ---------------- BUSINESS MODEL ---------------- */
+const pricingPlans = [
+  {tier:'Basic', price:'₹8,000/mo', color:'#2DD4EE', features:['Up to 5 machines','Predictive maintenance only','Email alerts'], who:'Small workshops'},
+  {tier:'Professional', price:'₹22,000/mo', color:'#FFB020', features:['Up to 20 machines','+ defect & safety detection','Dashboard + mobile app'], who:'Mid-size MSME factories'},
+  {tier:'Enterprise', price:'Custom', color:'#FF5468', features:['Unlimited machines','Digital twin + copilot','Dedicated support & SLA'], who:'Multi-plant manufacturers'},
+];
+function renderPricing(){
+  document.getElementById('pricingGrid').innerHTML = pricingPlans.map(p=>`
+    <div class="card module-card">
+      <div class="module-top"><div style="font-weight:700;color:${p.color};">${p.tier}</div><div class="kpi-val" style="font-size:18px;">${p.price}</div></div>
+      <ul style="font-size:12px;color:var(--text);line-height:1.8;margin:4px 0 0;padding-left:16px;">${p.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+      <div style="font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;margin-top:auto;">Target: ${p.who}</div>
+    </div>`).join('');
+}
+/* ---------------- UNIT ECONOMICS CALCULATOR ---------------- */
+function renderUnitEconomics(){
+  const arpu = Number(document.getElementById('ueArpu').value)||0;
+  const margin = Number(document.getElementById('ueMargin').value)||0;
+  const life = Number(document.getElementById('ueLife').value)||0;
+  const cac = Number(document.getElementById('ueCac').value)||1;
+  const ltv = arpu * (margin/100) * life;
+  const ratio = ltv/cac;
+  const payback = cac / (arpu * (margin/100) || 1);
+  document.getElementById('ueLtvOut').textContent = '₹'+Math.round(ltv).toLocaleString('en-IN');
+  document.getElementById('ueRatioOut').textContent = ratio.toFixed(1)+' : 1';
+  document.getElementById('uePaybackOut').textContent = payback.toFixed(1);
+}
+['ueArpu','ueMargin','ueLife','ueCac'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', renderUnitEconomics);
+});
+
+const chartForecast = new Chart(document.getElementById('chartForecast'), {
+  type:'line',
+  data:{labels:['Y1','Y2','Y3','Y4','Y5'], datasets:[
+    {label:'Customers', data:[6,18,40,85,150], borderColor:'#2DD4EE', yAxisID:'y1', tension:.3},
+    {label:'Revenue (₹L)', data:[12,45,110,260,480], borderColor:'#FFB020', backgroundColor:'#FFB02022', fill:true, yAxisID:'y2', tension:.3},
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{boxWidth:10,font:{size:11}}}},
+    scales:{
+      y1:{position:'left',grid:{color:'#17202A'},title:{display:true,text:'Customers',font:{size:10}}},
+      y2:{position:'right',grid:{display:false},title:{display:true,text:'₹ Lakh',font:{size:10}}},
+      x:{grid:{display:false}}
+    }}
+});
+
+/* ---------------- PITCH DECK ---------------- */
+const pitchSlides = [
+  ['Title & Vision','FactoryMind AI — one sentence on the future of MSME factory intelligence'],
+  ['Problem','Unplanned downtime, manual safety checks and reactive maintenance cost MSMEs money daily'],
+  ['Market Opportunity','Size of the addressable MSME manufacturing base and IoT/AI spend trend'],
+  ['Current Limitations','Existing tools are enterprise-priced, hard to install, or purely dashboards with no AI'],
+  ['Competitive Moat / IP','Specific technical delta vs generic "AI+IoT": name the exact model/technique — e.g. your zero-history calibration method for new factories — and confirm it against a prior-art/patent search'],
+  ['Our Solution','Plug-in edge sensors + AI models + a dashboard MSMEs can actually operate'],
+  ['AI Architecture','8 specialized models: predictive maintenance, defect/PPE vision, forecasting, copilot'],
+  ['System Architecture','Sensor → edge gateway → FastAPI backend → AI inference → dashboards'],
+  ['IoT + Hardware','ESP32 gateways, vibration/thermal sensors, cameras — low-cost, retrofit-friendly'],
+  ['Factory Digital Twin','Live floor visualization mapped to real machine health data'],
+  ['AI Demo','Screen recording of a live alert being caught and resolved'],
+  ['Business Model','Hardware + SaaS subscription tiers, plus enterprise licensing, with LTV:CAC unit economics'],
+  ['Team & Advisors','Founder + technical co-founder + one industry advisor — name real people, not placeholders, by submission time'],
+  ['Traction','Signed pilot LOI(s), survey findings from real factory visits — replace this slide with real names before submitting'],
+  ['Roadmap','Pilot → paid pilots → multi-factory rollout, month by month'],
+  ['Future Scope','New verticals, additional sensor types, deeper LLM copilot features'],
+  ['Funding Ask','₹15L breakdown and what it unlocks in the next 12 months'],
+];
+function renderPitch(){
+  document.getElementById('pitchGrid').innerHTML = pitchSlides.map((s,i)=>`
+    <div class="card slide-card">
+      <div class="slide-num">SLIDE ${i+1}</div>
+      <div style="font-weight:700;font-size:14px;margin:4px 0 6px;">${s[0]}</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;">${s[1]}</div>
+    </div>`).join('');
+}
+
+/* ---------------- JUDGE PREP ---------------- */
+const judgeQs = [
+  ['Technical','How does the system handle a sensor going offline mid-shift?','Edge gateway buffers locally and syncs on reconnect — explain your buffering/retry logic and data-loss window.'],
+  ['Technical','Why this ML model over alternatives?','State the accuracy/latency tradeoff you tested and why it fits factory-floor constraints.'],
+  ['AI','How do you avoid false alerts overwhelming operators?','Describe thresholding, alert-fatigue safeguards, and how confidence scores are surfaced.'],
+  ['AI','What data was the model trained on, and how do you handle a new factory with no history?'],
+  ['Business','What is your customer acquisition cost vs lifetime value assumption?','Show the math and where the biggest assumption risk sits.'],
+  ['Business','Why would a factory owner trust an AI alert over their own foreman?','Talk about the pilot before/after comparison and transparency of the model reasoning.'],
+  ['Security','How is factory data isolated between customers?','Per-tenant data separation, RBAC, and encryption in transit/at rest.'],
+  ['Scalability','What breaks first if you 10x the number of connected machines?','Identify the actual bottleneck — ingestion, DB writes, or inference — and your mitigation.'],
+  ['Patent','What exactly is novel here versus existing industrial IoT platforms?','Point to one concrete delta — e.g. how your model calibrates for a brand-new factory with zero historical failure data, versus platforms that need months of training data first. Run an actual prior-art search on that specific claim before repeating it to judges.'],
+  ['Revenue','What is your path to profitability, not just revenue growth?','Show unit economics per customer, not just topline forecast.'],
+  ['Competition','What stops a larger player from copying this in 6 months?','Speed of iteration with real factory data, and depth of on-ground MSME relationships.'],
+  ['MSME Relevance','Why would a cash-constrained MSME prioritize this over hiring another technician?','Tie back to concrete downtime-cost numbers from your own pilot data.'],
+];
+function renderJudge(){
+  document.getElementById('judgeGrid').innerHTML = judgeQs.map(q=>`
+    <div class="card">
+      <span class="qa-tag">${q[0]}</span>
+      <div class="qa-q">${q[1]}</div>
+      <div class="qa-a">${q[2]||'Fill in with your own specific answer.'}</div>
+    </div>`).join('');
+}
+
+/* ---------------- ROADMAP ---------------- */
+const roadmap6 = [['M1','Finish pilot deployment, gather first real usage data'],['M2','Refine models on real factory data, fix false-alert rate'],['M3','Sign first paid pilot / LOI'],['M4','File provisional patent if novelty holds'],['M5','Apply to Startup India / MSME incubation'],['M6','Close pre-seed or grant funding round']];
+const roadmap3y = [['Y1','Team of 3–4, 5–10 paying factories, product-market fit signals'],['Y2','Seed round, 20–40 customers, second product tier (Enterprise)'],['Y3','Series A conversation, multi-state expansion, deeper vertical features']];
+function renderRoadmap(){
+  document.getElementById('roadmap6').innerHTML = roadmap6.map(r=>`<div class="tl-item"><div class="tl-when">${r[0]}</div><div style="font-size:12.5px;">${r[1]}</div></div>`).join('');
+  document.getElementById('roadmap3y').innerHTML = roadmap3y.map(r=>`<div class="tl-item"><div class="tl-when">${r[0]}</div><div style="font-size:12.5px;">${r[1]}</div></div>`).join('');
+}
+
+/* ---------------- SELF-EVALUATION ---------------- */
+const scoreCats = ['Innovation','Technical Depth','AI Capability','Business Value','MSME Relevance','Scalability','Presentation','Research Potential','Startup Potential','Patent Potential'];
+function renderScore(){
+  document.getElementById('scoreList').innerHTML = scoreCats.map((c,i)=>`
+    <div class="score-row">
+      <div class="score-label">${c}</div>
+      <input type="range" min="0" max="10" value="5" data-idx="${i}" class="scoreSlider" style="flex:1;">
+      <div class="score-num" id="scoreVal${i}">5</div>
+    </div>`).join('');
+  document.querySelectorAll('.scoreSlider').forEach(s=>{
+    s.addEventListener('input',()=>{
+      document.getElementById('scoreVal'+s.dataset.idx).textContent = s.value;
+      updateScoreTotal();
+    });
+  });
+  updateScoreTotal();
+}
+function updateScoreTotal(){
+  let total = 0;
+  document.querySelectorAll('.scoreSlider').forEach(s=>total+=Number(s.value));
+  document.getElementById('scoreTotal').textContent = total+'/100';
+}
+const improvements = [
+  ['Pilot data still not real', 'The Unit Economics and Pilot Plan sections are ready — but the numbers in them are placeholders until you run the actual 30-day pilot', 'Install on 2–3 real machines and log real before/after numbers into this deck'],
+  ['Patent claim needs a prior-art check', 'The deck now names a specific technical delta instead of "AI+IoT" — but nobody has verified it against existing patents yet', 'Run a prior-art search on your named claim (a patent agent or IP cell can help) before repeating it to judges'],
+  ['LOI still unsigned', 'The template letter is ready in Business Validation — a template is not evidence', 'Get one real factory owner to actually sign it before the deadline'],
+  ['Team slide has placeholder names', 'Judges will notice "[Your Name]" and "[Hiring]" immediately', 'Fill in real names, or be ready to honestly explain your hiring plan if a role is still open'],
+  ['Competitive table needs your own verification', 'The comparison in Business Model is a reasonable starting map, not independently fact-checked', 'Spend an hour confirming current competitor pricing/features before quoting it to a panel'],
+];
+function renderImprove(){
+  document.getElementById('improveGrid').innerHTML = improvements.map(i=>`
+    <div class="card">
+      <div style="font-weight:700;font-size:13px;color:var(--red);margin-bottom:6px;">${i[0]}</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;">${i[1]}</div>
+      <div style="font-size:12px;color:var(--text);border-top:1px solid var(--line);padding-top:8px;">→ ${i[2]}</div>
+    </div>`).join('');
+}
+
+/* ---------------- REPORTS TAB fill ---------------- */
+function fillReport(){
+  document.getElementById('repWeek').textContent = new Date().toLocaleDateString('en-IN');
+  document.getElementById('repOEE').textContent = fmt1(rnd(80,86));
+  document.getElementById('repDown').textContent = fmt1(rnd(18,30));
+  document.getElementById('repDefect').textContent = fmt1(rnd(1.3,2.2));
+  document.getElementById('repWater').textContent = fmt1(rnd(4,9));
+}
+
+/* ---------------- MAIN LOOP ---------------- */
+function tick(){
+  stepMachines();
+  renderMachineTable();
+  renderHealthList();
+  renderTwin();
+}
+
+renderMachineTable();
+renderHealthList();
+renderLineTable();
+renderAiModules();
+renderTwin();
+renderArch();
+renderStack();
+updateKPIs();
+fillReport();
+renderPersonas();
+renderPilot();
+renderSurvey();
+renderBudget();
+renderPricing();
+renderPitch();
+renderJudge();
+renderRoadmap();
+renderScore();
+renderImprove();
+renderUnitEconomics();
+renderTeam();
+
+setInterval(tick, 2200);
+setInterval(updateKPIs, 8000);
+setInterval(renderLineTable, 6000);
+setInterval(pushRandomFeed, 3200);
+for(let i=0;i<4;i++) pushRandomFeed();
+</script>
+</body>
+</html>
